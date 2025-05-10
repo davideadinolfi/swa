@@ -1,5 +1,4 @@
 package org.univaq.swa.framework.security;
-
 import jakarta.ws.rs.core.UriInfo;
 import java.util.UUID;
 
@@ -18,20 +17,23 @@ public class AuthHelpers {
     }
 
     public boolean authenticateUser(String username, String password) {
-        return true;
+        if(username.equals("u") && password.equals("p"))
+            return true;
+        return false;
     }
 
     public String issueToken(UriInfo context, String username) {        
-        String token = username + UUID.randomUUID().toString();
+        String token = JWTHelpers.getInstance().issueToken(context, username);
         return token;
     }
 
     public void revokeToken(String token) {
-        /* invalidate il token */
+        JWTHelpers.getInstance().revokeToken(token);
     }
 
     public String validateToken(String token) {
-        return "pippo"; //lo username andrebbe derivato dal token!
+        return JWTHelpers.getInstance().validateToken(token);
+  
     }
 
     public static AuthHelpers getInstance() {

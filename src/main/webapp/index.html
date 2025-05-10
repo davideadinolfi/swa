@@ -1,83 +1,94 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>JAX-RS Template application (JakartaEE 10)</title>
+        <title>SoccorsoWEB</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="res/restest.css"/>
+        <link rel="stylesheet" href="res/css.css"/>
+
     </head>
     <body>
-        <h1>JAX-RS Template application (JakartaEE 10)</h1>
-        <p>This is a template web application based on <strong>JakartaEE 10</strong> that runs on Apache <strong>Tomcat 10.1</strong> with <strong>Java 14</strong> or above.</p>
-        <p> The application is configured to expose RESTful resources through the <strong>JAX-RS</strong> reference implementation, <strong>Jersey</strong> (version 3, for Jakarta EE).</p>
-        <p> JAX-RS JSON serialization is handled by the <strong>Jackson</strong> JSON Provider (version 2, for Jakarta EE).</p>
+        <h1>SoccorsoWEB</h1>
 
-        <p>The application also shows:</p>
-        <ul>
-            <li>how to <strong>perform the basic JAX-RS environment setup</strong> (class <em>org.univaq.swa.template.base.RESTApp</em>)</li>
-            <li>how to implement a simple <strong>resource class</strong> (class <em>org.univaq.swa.template.resources.SimpleRes</em>)</li>
-            <li>how to implement a simple <strong>WebApplicationException</strong> (class <em>org.univaq.swa.template.exceptions.RESTWebApplicationException</em>)</li>                        
-            <li>how to implement a custom <strong>exception mapper</strong> (classes <em>org.univaq.swa.template.exceptions.AppExceptionMapper</em> and <em>org.univaq.swa.template.exceptions.JacksonExceptionMapper</em>)</li>
-            <li>how to implement <strong>Jackson custom serializers and deserializers</strong> for Java classes (package <em>org.univaq.swa.framework.jackson</em>).</li>
-            <li>how to implement a <strong>filter to handle CORS preflight requests</strong> (class <em>org.univaq.swa.framework.security.CORSFilter</em>)</li>
-            <li>how to declare a <strong>JAX-RS authentication annotation</strong> (class <em>org.univaq.swa.framework.security.Logged</em>)</li>
-            <li>how to implement a simple <strong>login resource class</strong> to issue an access token (class <em>org.univaq.swa.framework.security.AuthenticationRes</em>)</li>
-            <li>how to implement a <strong>filter to handle JAX-RS authentication annotations</strong> (class <em>org.univaq.swa.framework.security.AuthLoggedFilter</em>)</li>
-        </ul>
+       
+        <h2>Inserisci una richiesta</h2>
+    <form id="richiestaForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" required><br><br>
 
-        <p>The RESTful resources, grouped under the /rest prefix, are the following:</p>
+        <label for="indirizzo">Indirizzo:</label>
+        <input type="text" id="indirizzo" required><br><br>
 
-        <table class="restest" width="100%">
-            <thead>
-                <tr>
-                    <th>Path</th>
-                    <th>Method</th>
-                    <th>Parameters</th>
-                    <th>Payload</th>
-                    <th>Authentication</th>
-                    <th>URL to Try</th>
-                    <th>(Expected) Result</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td rowspan="2">/simple</td>
-                    <td>GET</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td><a data-rest-test data-rest-test-target href="rest/simple"><small>GET rest/simple</small></a></td>
-                    <td  class="output">a list of greetings</td>
-                </tr>
-                <tr>
-                    <td>POST</td>
-                    <td></td>
-                    <td>any string</td>
-                    <td></td>
-                    <td><span data-rest-test-target data-rest-test-method="post" data-rest-test-payoad="testtest"  data-rest-test-status="201" data-rest-test-url="rest/simple"></span></td>
-                    <td class="output">the URL to item 1000</td>
-                </tr>
-                <tr>
-                    <td rowspan="2">/simple/{item}</td>
-                    <td rowspan="2">GET</td>
-                    <td rowspan="2">item: [0-9]+</td>
-                    <td rowspan="2"></td>
-                    <td rowspan="2"></td>
-                    <td><a data-rest-test data-rest-test-target href="rest/simple/14000"><small>GET rest/simple/14000</small></a></td>
-                    <td class="output" >200 with the item</td>
-                </tr>
-                <tr>
-                    <td><a data-rest-test data-rest-test-status="404" data-rest-test-target href="rest/simple/14"><small>GET rest/simple/14</small></a></td>
-                    <td  class="output">404</td>
-                </tr>            
-            </tbody>
-        </table>
+        <button type="submit">Invia</button>
+    </form>
+
+    <pre id="risposta"></pre>
+
+
+    <h2>Inserisci una missione</h2>
+    <form id="missioneForm">
+        <label for="idR">id richiesta:</label>
+        <input type="text" id="idR" required><br><br>
+        <label for="obiettivo">obiettivo:</label>
+        <input type="text" id="obiettivo" required><br><br>
+        <label for="commenti">commenti:</label>
+        <input type="text" id="commenti" required><br><br>
+        <button type="submit">Invia</button>
+    </form>
+
+    <pre id="rispostaMissione"></pre>
+
+
+
+
+</head>
+<body>
+      
+    <select id="filtroStato">
+        <option value="null" selected>Tutti</option>
+        <option value="ATTIVA">Attiva</option>
+        <option value="IN_CORSO">In corso</option>
+        <option value="CHIUSA">Chiusa</option>
+        <option value="IGNORATA">Ignorata</option>
+    </select>
+    
+    <input type="checkbox" id="filtroSuccesso" value="true">
+    <label for="filtroSuccesso"> solo richieste non completamente positive </label>
+    <button onclick="applicaFiltri()">Filtra</button>
+
+<h2>Richieste ricevute</h2>
+<div id="table-container"></div>
+<button id="prev">Indietro</button>
+<button id="next">Avanti</button>
+<p>Pagina: <span id="page-number">1</span></p>
+
+
+
+
+
+    <h1>Operatori liberi</h1>
+  
+    <table id="utentiTable"> 
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  
+    <button id="prevPageUtenti">← Precedente</button>
+    <span id="pageInfoUtenti"></span>
+    <button id="nextPageUtenti">Successiva →</button>
+
+
+  
+  
 
         <h2>Authentication</h2>
-        <p>To test the login/logout resource <em>(AuthenticationRes)</em>, use the login form below. <strong>Links marked with &#x1f512; on this page call
-                restful endpoints requiring a bearer token and can be clicked only after a successful login.</strong></p>
 
-        <table class="restest" width="100%">
+        <table  width="100%">
             <thead>
                 <tr>
                     <th>Path</th>
@@ -127,28 +138,15 @@
                 </tr>
             </tfoot>
         </table>
-
-        <div style="border: 1px solid gray; margin: 1em auto; padding: 1em">
-            <p>
-                <em>Note that this project includes a Javascript library that automatically checks the above endpoints when this webpage is opened. This library
-                    is not part of the JAX-RS framework and it is not required to implement RESTful resources, and has been developed only as an aid for the
-                    sample resources included in this project.</em>
-            </p>
-            <p>
-                <span class="rest-test-message-error" style="color: red">
-                    Some tested endpoints did not return the expected result
-
-                </span>
-                <span class="rest-test-message-ok" style="color: green">
-                    All tested endpoints returned the correct result
-                </span>
-            </p>
-        </div>
+        
 
 
 
 
-        <script src="res/restest.js">/* */</script>
+
+        
+        <script src="res/script.js"></script>
+        <script src="res/restest.js"></script>
         <script>
             let tester = new Restest();
         </script>

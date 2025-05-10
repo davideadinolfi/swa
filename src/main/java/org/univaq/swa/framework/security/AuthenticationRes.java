@@ -33,9 +33,10 @@ public class AuthenticationRes {
             
             if (AuthHelpers.getInstance().authenticateUser(username, password)) {
                 String authToken = AuthHelpers.getInstance().issueToken(uriinfo, username);
+                
                 //Restituiamolo in tutte le modalità, giusto per fare un esempio...
                 return Response.ok(authToken)
-                        .cookie(new NewCookie.Builder("token").value(authToken).build())
+                        .cookie(new NewCookie.Builder("token").value(authToken).path("/").build())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + authToken).build();
             }
         } catch (Exception e) {

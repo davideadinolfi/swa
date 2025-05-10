@@ -7,6 +7,7 @@
 
 "use strict";
 
+
 function Restest(testall = true) {
     let bearer_token = null;
     let tests_ok_count = 0;
@@ -170,7 +171,7 @@ function Restest(testall = true) {
                 "post", "rest/auth/login",
                 function (callResponse, callStatus, callAuthHeader) {
                     if (callStatus === 200) {
-                        setToken(extractTokenFromHeader(callAuthHeader));
+                        setToken(extractTokenFromHeader(callAuthHeader))
                     } else {
                         setToken(null);
                     }

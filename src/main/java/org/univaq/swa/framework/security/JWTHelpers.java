@@ -39,7 +39,9 @@ public class JWTHelpers {
     }
 
     public String validateToken(String token) {
+        System.out.println(token);
         Jws<Claims> jwsc = Jwts.parser().verifyWith(getJwtKey()).build().parseSignedClaims(token);
+        System.out.println(jwsc.getPayload().getSubject());
         return jwsc.getPayload().getSubject();
     }
 
