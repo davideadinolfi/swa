@@ -79,4 +79,20 @@ public static Missione getMissioneById(int id) {
         }
     }
     return null;
-}}
+}
+@GET
+@Path("{id}/close")
+@Produces(MediaType.APPLICATION_JSON)
+public Response chiudiMissione(@PathParam("id") String id) {
+    if(id == null || id.isEmpty()) {
+        return Response.status(Response.Status.BAD_REQUEST).entity("ID non valido").build();
+    }
+    for (Missione m : missioni) {
+        if (m.getId() == Integer.parseInt(id)) {
+            m.setFine(LocalDateTime.now());
+            return Response.ok(m).build();
+        }
+    }
+    return Response.status(Response.Status.NOT_FOUND).entity("Missione non trovata").build();
+}
+}
