@@ -1,0 +1,537 @@
+openapi: 3.0.3
+info:
+  title: soccorsoweb OpenAPI 3.0
+  version: 1.0.11
+tags:
+  - name: utente
+    description: utente
+
+
+paths:
+  /utente/login:
+    get:
+      tags:
+        - utente
+      summary: Logs user into the system
+      description: ''
+      operationId: loginUser
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password supplied
+          
+  /utente/logout:
+    get:
+      tags:
+        - utente
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+    
+  /requests:
+    post:
+      tags:
+        - richieste
+      summary: Inserimento di una richiesta di soccorso
+      operationId: createRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Richiesta'
+      responses:
+        '201':
+          description: Richiesta creata con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Richiesta'
+    get:
+      tags:
+        - richieste
+      summary: Lista paginata delle richieste di soccorso, filtri disponibili per stato e per successo
+      operationId: listRequests
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [attiva, in corso, chiusa,]
+          description: Filtra per tipologia di richiesta
+        - in: query
+          name: success_lt
+          schema:
+            type: integer
+            minimum: 0
+          description: Filtra per livello di successo minore (solo per richieste chiuse)
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Numero di pagina
+        - in: query
+          name: perPage
+          schema:
+            type: integer
+            default: 10
+          description: Elementi per pagina
+      responses:
+        '200':
+          description: Lista di richieste
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  perPage:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Richiesta'
+  /requests/{id}:
+    get:
+      tags:
+        - richieste
+      summary: Dettagli di una richiesta di soccorso
+      operationId: getRequest
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dettagli richiesta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Richiesta'
+        '404':
+          description: Richiesta non trovata
+  /requests/{id}/validate:
+    get:
+      tags:
+        - richieste
+      summary: Convalida di una richiesta di soccorso
+      operationId: validateRequest
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Richiesta convalidata con successo
+        '400':
+          description: Token non valido o richiesta non trovata
+  /requests/{id}/reject:
+    get:
+      tags:
+        - richieste
+      summary: Annullamento di una richiesta di soccorso
+      operationId: rejectRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+          description: token di autenticazione
+      responses:
+        '200':
+          description: Richiesta convalidata con successo
+        '400':
+          description: Token non valido o richiesta non trovata
+  /operators:
+    get:
+      tags:
+        - utente
+      summary: Lista degli operatori attualmente liberi
+      operationId: listFreeOperators
+      responses:
+        '200':
+          description: Operatori liberi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Operatore'
+  /operators/{id}:
+    get:
+      tags:
+        - utente
+      summary: Dettagli di un operatore
+      operationId: getOperator
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dettagli operatore
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operatore'
+        '404':
+          description: Operatore non trovato
+  /operators/{id}/history:
+    get:
+      tags:
+        - utente
+      summary: Lista delle missioni in cui un operatore è stato coinvolto
+      operationId: listOperatorMissions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Numero di pagina
+        - in: query
+          name: perPage
+          schema:
+            type: integer
+            default: 10
+          description: Elementi per pagina
+      responses:
+        '200':
+          description: Lista missioni per operatore
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  perPage:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Missione'
+  /missions:
+    post:
+      tags:
+        - missione
+      summary: Creazione di una missione
+      operationId: createMission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Missione'
+      responses:
+        '201':
+          description: Missione creata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Missione'
+  /missions/{id}:
+    get:
+      tags:
+        - missione
+      summary: Dettagli di una missione
+      operationId: getMission
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dettagli missione
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Missione'
+        '404':
+          description: Missione non trovata
+  /missions/{id}/close:
+    get:
+      tags:
+        - missione
+      summary: Chiusura di una missione in corso
+      operationId: closeMission
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Missione chiusa con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Missione'
+        '400':
+          description: Missione non trovata o già chiusa
+          
+          
+components:
+  schemas:
+
+    Missione:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        richiestaid:
+          type: integer
+          format: int32
+          nullable: true
+        obiettivo:
+          type: string
+          maxLength: 255
+          nullable: true
+        inizio:
+          type: string
+          format: date-time
+          nullable: true
+        fine:
+          type: string
+          format: date-time
+          nullable: true
+        stato:
+          type: string
+          enum:
+            - in corso
+            - conclusa
+          nullable: true
+
+        commenti:
+          type: string
+          maxLength: 255
+          nullable: true
+      required:
+        - id
+
+    Richiesta:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        indirizzo:
+          type: string
+          maxLength: 255
+          nullable: true
+        email:
+          type: string
+          maxLength: 255
+          nullable: true
+        foto:
+          type: string
+          format: binary
+          nullable: true
+        stato:
+          type: string
+          enum:
+            - attiva
+            - in corso
+            - chiusa
+          nullable: true
+        successo:
+          type: integer
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+          nullable: true
+      required:
+        - id
+
+    Risorsa:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        stato:
+          type: string
+          enum:
+            - libero
+            - occupato
+          nullable: true
+        info:
+          type: string
+          maxLength: 255
+          nullable: true
+        tipo:
+          type: string
+          enum:
+            - materiale
+            - mezzo
+        nome:
+          type: string
+      required:
+        - id
+        - tipo
+        - nome
+
+    RisorseMissione:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        tipo:
+          type: string
+          enum:
+            - operatore
+            - mezzo
+            - materiale
+            - caposquadra
+          nullable: true
+        id_op:
+          type: integer
+          format: int32
+          nullable: true
+        id_risorsa:
+          type: integer
+          format: int32
+          nullable: true
+        commento:
+          type: string
+          maxLength: 255
+          nullable: true
+      required:
+        - id
+
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        email:
+          type: string
+          maxLength: 255
+          nullable: true
+        password:
+          type: string
+          maxLength: 255
+          nullable: true
+    Admin:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/User'
+    Operatore:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/User'
+      properties:
+        stato:
+          type: string
+          enum:
+            - libero
+            - occupato
+        informazioni:
+          type: array
+          items:
+            type: string
+            
+        missioni:
+          type: array
+          items:
+            $ref: '#/components/schemas/Missione'
+        
+
+          
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: internalToken        
+          
+  responses:
+    GeneralError:
+      description: errore generale
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: "Messaggio di Errore"
+    UnauthorizedError:
+      description: bearer token mancante o non valido
+    NoContentFound:
+      description: Nessun contenuto trovato
+    NotFound:
+      description: elemento non trovato
+      content:
+        text/plain:
+          schema:
+            type: string
+            example: "Elemento inesistente"
